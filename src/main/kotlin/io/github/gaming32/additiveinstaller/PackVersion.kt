@@ -1,9 +1,8 @@
 package io.github.gaming32.additiveinstaller
 
 import com.google.gson.JsonObject
-import io.github.gaming32.additiveinstaller.installer.ProgressHandler
 
-class PackVersion(val data: JsonObject) {
+class PackVersion(val modpack: Modpack, val data: JsonObject) {
     val packVersion: String
     val gameVersion: String
     val loader: Loader
@@ -25,6 +24,8 @@ class PackVersion(val data: JsonObject) {
         }.uppercase().let(Loader::valueOf)
     }
 
-    fun install(progressHandler: ProgressHandler = ProgressHandler.Null) =
-        loader.installer.install(this, progressHandler)
+    val launcherVersionId = "${modpack.id}-$packVersion-$gameVersion"
+    val launcherProfileId = "${modpack.id}-$gameVersion"
+
+    fun install(progressHandler: ProgressHandler) = PackInstaller(this, progressHandler).use(PackInstaller::install)
 }

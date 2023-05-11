@@ -5,11 +5,11 @@ import javax.imageio.ImageIO
 
 private const val PROJECT_BASE = "https://api.modrinth.com/v2/project"
 
-class Modpack(id: String) {
-    val versions = requestJson("$PROJECT_BASE/$id/version").asJsonArray
+class Modpack(val id: String) {
+    val versions = requestCriticalJson("$PROJECT_BASE/$id/version").asJsonArray
         .asSequence()
         .map(JsonElement::getAsJsonObject)
-        .map(::PackVersion)
+        .map { PackVersion(this, it) }
         .run {
             val result = mutableMapOf<String, MutableMap<String, PackVersion>>()
             for (version in this) {
@@ -24,8 +24,13 @@ class Modpack(id: String) {
             result as Map<String, Map<String, PackVersion>>
         }
 
-    val windowTitle = "${id.capitalize()} Installer"
-    val image = ImageIO.read(javaClass.getResource("/$id.png"))!!
+    val name = id.capitalize()
+    val windowTitle = "$name Installer"
+    val image = ImageIO.read(javaClass.getResource("/${id}96.png"))!!
+    val launcherIcon = javaClass.getResource("/${id}32.png")
+        ?.readBytes()
+        ?.toBase64()
+        ?.prefix("data:image/png;base64,")
     val supportedMcVersions = buildSet {
         for ((key, value) in versions) {
             if (value.values.first().data["featured"].asBoolean) {

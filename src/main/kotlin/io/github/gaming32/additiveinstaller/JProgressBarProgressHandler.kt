@@ -1,8 +1,10 @@
 package io.github.gaming32.additiveinstaller
 
-import io.github.gaming32.additiveinstaller.installer.ProgressHandler
+import io.github.oshai.KotlinLogging
 import javax.swing.JProgressBar
 import javax.swing.SwingUtilities
+
+private val logger = KotlinLogging.logger {}
 
 class JProgressBarProgressHandler(private val bar: JProgressBar) : ProgressHandler {
     private var prepared = false
@@ -22,10 +24,13 @@ class JProgressBarProgressHandler(private val bar: JProgressBar) : ProgressHandl
         prepared = false
     }
 
-    override fun newTask(title: String) = SwingUtilities.invokeLater {
-        prepared = false
-        bar.value++
-        bar.string = title
+    override fun newTask(title: String) {
+        logger.info("New task: $title")
+        SwingUtilities.invokeLater {
+            prepared = false
+            bar.value++
+            bar.string = "$title (${bar.value}/${bar.maximum})"
+        }
     }
 
     override fun done() = SwingUtilities.invokeLater {
