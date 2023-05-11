@@ -34,7 +34,7 @@ class PackInstaller(
 
     private lateinit var packIndex: JsonObject
 
-    private  val modsDir = DOT_MINECRAFT / packVersion.launcherVersionId
+    private val modsDir = DOT_MINECRAFT / packVersion.launcherVersionId
 
     @OptIn(ExperimentalPathApi::class)
     private  fun writeVersionDir(clientJson: JsonObject) {
@@ -119,7 +119,6 @@ class PackInstaller(
 
         progressHandler.newTask("Patching client.json")
         clientJson["id"] = packVersion.launcherVersionId
-        packVersion.loader.addMods(clientJson["arguments"].asJsonObject["game"].asJsonArray, modsDir)
 
         writeVersionDir(clientJson)
         updateLauncherProfiles()
@@ -137,13 +136,9 @@ class PackInstaller(
         files.asSequence().map(JsonElement::getAsJsonObject).forEach { file ->
             val path = file["path"].asString
             progressHandler.newTask("Downloading $path")
-            val (destRoot, dest) = if (path.startsWith("mods/")) {
-                Pair(modsDir, modsDir / path.substring(5))
-            } else {
-                Pair(destination, destination / path)
-            }
-            if (!dest.startsWith(destRoot)) {
-                throw IllegalArgumentException("Path doesn't start with mods dir?")
+            val dest = destination / path
+            if (!dest.startsWith(destination)) {
+                throw IllegalArgumentException("Path doesn't start with instance dir?")
             }
             dest.parent.createDirectories()
             download(file, file["downloads"].asJsonArray.first().asString, dest)
