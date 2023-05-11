@@ -2,15 +2,13 @@ package io.github.gaming32.additiveinstaller
 
 import com.google.common.jimfs.Configuration
 import com.google.common.jimfs.Jimfs
+import com.google.gson.JsonElement
 import com.google.gson.JsonObject
 import com.google.gson.JsonParser
 import io.github.oshai.KotlinLogging
 import java.net.URI
 import java.nio.file.FileSystem
 import java.nio.file.FileSystems
-import java.nio.file.Files
-import java.security.DigestInputStream
-import java.security.MessageDigest
 import kotlin.io.path.*
 
 private val logger = KotlinLogging.logger {}
@@ -81,26 +79,22 @@ class PackInstaller(
     }
 
     private fun downloadPack() {
-        progressHandler.newTaskSet(1)
-        progressHandler.newTask("Downloading pack")
+        progressHandler.newTaskSet(3)
 
+        progressHandler.newTask("Downloading pack")
         val files = packVersion.data["files"].asJsonArray
         val file = files.asSequence()
             .map { it.asJsonObject }
             .firstOrNull { it["primary"].asBoolean }
             ?: files[0].asJsonObject
         val jfsPath = jimfs.getPath(file["filename"].asString)
+        download(file, file["url"].asString, jfsPath)
 
-        val digest = MessageDigest.getInstance("SHA-512")
-        Files.copy(DigestInputStream(request(file["url"].asString), digest), jfsPath)
-        if (!digest.digest().contentEquals(file["hashes"].asJsonObject["sha512"].asString.hexToByteArray())) {
-            throw IllegalStateException("Hash mismatch!")
-        }
-
+        progressHandler.newTask("Opening pack")
         zfs = FileSystems.newFileSystem(URI("jar:${jfsPath.toUri()}!/"), mapOf<String, String>())
 
+        progressHandler.newTask("Reading index")
         packIndex = zfs.getPath("modrinth.index.json").reader().use(JsonParser::parseReader).asJsonObject
-
         if (packIndex["dependencies"].asJsonObject["minecraft"].asString != packVersion.gameVersion) {
             throw IllegalStateException("Game version mismatch!")
         }
@@ -127,8 +121,44 @@ class PackInstaller(
         updateLauncherProfiles()
     }
 
+    @OptIn(ExperimentalPathApi::class)
     private fun installPack() {
-        progressHandler.prepareNewTaskSet("Installing pack")
+        progressHandler.prepareNewTaskSet("Downloading mods")
+
+        val files = packIndex["files"].asJsonArray
+        modsDir.deleteRecursively()
+
+        progressHandler.newTaskSet(files.size())
+
+        files.asSequence().map(JsonElement::getAsJsonObject).forEach { file ->
+            val path = file["path"].asString
+            progressHandler.newTask("Downloading $path")
+            val (destRoot, dest) = if (path.startsWith("mods/")) {
+                Pair(modsDir, modsDir / path.substring(5))
+            } else {
+                Pair(DOT_MINECRAFT, DOT_MINECRAFT / path)
+            }
+            if (!dest.startsWith(destRoot)) {
+                throw IllegalArgumentException("Path doesn't start with mods dir?")
+            }
+            dest.parent.createDirectories()
+            download(file, file["downloads"].asJsonArray.first().asString, dest)
+        }
+
+        progressHandler.prepareNewTaskSet("Extracting overrides")
+
+        val overridesDir = zfs.getPath("overrides")
+        val overrides = overridesDir.walk().toList()
+
+        progressHandler.newTaskSet(overrides.size)
+
+        for (override in overrides) {
+            val relative = override.relativeTo(overridesDir).toString()
+            progressHandler.newTask("Extracting $relative")
+            val dest = DOT_MINECRAFT / relative
+            dest.parent.createDirectories()
+            override.copyTo(dest, true)
+        }
     }
 
     fun install() {

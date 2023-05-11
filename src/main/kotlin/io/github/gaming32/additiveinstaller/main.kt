@@ -166,7 +166,7 @@ fun main() {
         isResizable = false
 
         pack()
-        defaultCloseOperation = JFrame.DISPOSE_ON_CLOSE
+        defaultCloseOperation = JFrame.EXIT_ON_CLOSE
         setLocationRelativeTo(null)
         isVisible = true
     } }

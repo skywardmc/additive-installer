@@ -10,6 +10,11 @@ import java.awt.Component
 import java.io.InputStream
 import java.io.Writer
 import java.net.URL
+import java.nio.file.Files
+import java.nio.file.Path
+import java.nio.file.StandardCopyOption
+import java.security.DigestInputStream
+import java.security.MessageDigest
 import java.time.ZoneOffset
 import java.time.ZonedDateTime
 import java.time.format.DateTimeFormatter
@@ -87,3 +92,13 @@ fun ByteArray.toBase64() = Base64.getEncoder().encodeToString(this)!!
 
 @Suppress("NOTHING_TO_INLINE")
 inline fun String.prefix(other: String) = other + this
+
+private val SHA512 = ThreadLocal.withInitial { MessageDigest.getInstance("SHA-512") }
+
+fun download(file: JsonObject, url: String, dest: Path) {
+    val sha512 = SHA512.get()
+    Files.copy(DigestInputStream(request(url), sha512), dest, StandardCopyOption.REPLACE_EXISTING)
+    if (!sha512.digest().contentEquals(file["hashes"].asJsonObject["sha512"].asString.hexToByteArray())) {
+        throw IllegalStateException("Hash mismatch!")
+    }
+}
