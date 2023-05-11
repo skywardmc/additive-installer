@@ -26,4 +26,11 @@ class Modpack(id: String) {
 
     val windowTitle = "${id.capitalize()} Installer"
     val image = ImageIO.read(javaClass.getResource("/$id.png"))!!
+    val supportedMcVersions = buildSet {
+        for ((key, value) in versions) {
+            if (value.values.first().data["featured"].asBoolean) {
+                add(key)
+            }
+        }
+    }
 }

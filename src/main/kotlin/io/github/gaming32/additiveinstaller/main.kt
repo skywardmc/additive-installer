@@ -34,6 +34,8 @@ fun main() {
         val packVersion = JComboBox<String>().apply {
         }
 
+        lateinit var setupMinecraftVersions: () -> Unit
+
         val minecraftVersion = JComboBox<String>().apply {
             addItemListener {
                 val gameVersion = selectedItem as? String ?: return@addItemListener
@@ -42,8 +44,24 @@ fun main() {
                     ?.keys
                     ?.forEach(packVersion::addItem)
             }
-            selectedPack.versions.keys.forEach(this::addItem)
         }
+
+        val includeUnsupportedMinecraft = JCheckBox("Include unsupported Minecraft versions").apply {
+            addActionListener { setupMinecraftVersions() }
+        }
+
+        fun setupMinecraftVersions() {
+            minecraftVersion.removeAllItems()
+            val all = includeUnsupportedMinecraft.isSelected
+            val supported = selectedPack.supportedMcVersions
+            selectedPack.versions
+                .keys
+                .asSequence()
+                .filter { all || it in supported }
+                .forEach(minecraftVersion::addItem)
+        }
+        setupMinecraftVersions = ::setupMinecraftVersions
+        setupMinecraftVersions()
 
         val includeFeatures = JCheckBox("Include non-performance features").apply {
             isSelected = true
@@ -54,8 +72,7 @@ fun main() {
                 iconLabel.icon = ImageIcon(selectedPack.image)
 
                 val mcVersion = minecraftVersion.selectedItem
-                minecraftVersion.removeAllItems()
-                selectedPack.versions.keys.forEach(minecraftVersion::addItem)
+                setupMinecraftVersions()
                 minecraftVersion.selectedItem = mcVersion
             }
         }
@@ -70,9 +87,11 @@ fun main() {
             })
             add(Box.createVerticalStrut(10))
             add(includeFeatures)
-            add(Box.createVerticalStrut(5))
+            add(Box.createVerticalStrut(10))
             add(minecraftVersion.withLabel("Minecraft version: "))
             add(Box.createVerticalStrut(5))
+            add(includeUnsupportedMinecraft)
+            add(Box.createVerticalStrut(10))
             add(packVersion.withLabel("Pack version: "))
         }
 
