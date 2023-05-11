@@ -8,6 +8,10 @@ import io.github.oshai.KotlinLogging
 import java.awt.BorderLayout
 import javax.swing.*
 import kotlin.concurrent.thread
+import kotlin.io.path.Path
+import kotlin.io.path.createDirectories
+import kotlin.io.path.exists
+import kotlin.io.path.isDirectory
 
 private val logger = KotlinLogging.logger {}
 
@@ -30,13 +34,20 @@ fun main() {
     val adrenaline = Modpack("adrenaline")
     var selectedPack = additive
 
+    val installDestChooser = JFileChooser(PackInstaller.DOT_MINECRAFT.toString()).apply {
+        fileSelectionMode = JFileChooser.DIRECTORIES_ONLY
+        isMultiSelectionEnabled = false
+        dialogTitle = "Select installation folder"
+        isAcceptAllFileFilterUsed = false
+        resetChoosableFileFilters()
+    }
+
     SwingUtilities.invokeLater { JFrame(selectedPack.windowTitle).apply root@ {
         iconImage = selectedPack.image
 
         val iconLabel = JLabel(ImageIcon(selectedPack.image))
 
-        val packVersion = JComboBox<String>().apply {
-        }
+        val packVersion = JComboBox<String>()
 
         lateinit var setupMinecraftVersions: () -> Unit
 
@@ -86,6 +97,16 @@ fun main() {
             isStringPainted = true
         }
 
+        val installationDir = JTextField(PackInstaller.DOT_MINECRAFT.toString())
+        val browseButton = JButton("Browse...").apply {
+            addActionListener {
+                if (installDestChooser.showOpenDialog(this@root) != JFileChooser.APPROVE_OPTION) {
+                    return@addActionListener
+                }
+                installationDir.text = installDestChooser.selectedFile.absolutePath
+            }
+        }
+
         lateinit var enableOptions: (Boolean) -> Unit
 
         val install = JButton("Install!").apply {
@@ -93,11 +114,23 @@ fun main() {
                 enableOptions(false)
                 val selectedMcVersion = minecraftVersion.selectedItem
                 val selectedPackVersion = packVersion.selectedItem
+                val destinationPath = Path(installationDir.text)
+                if (!destinationPath.isDirectory()) {
+                    if (destinationPath.exists()) {
+                        JOptionPane.showMessageDialog(
+                            this@root,
+                            "Installation dir exists and is not a directory.",
+                            title, JOptionPane.INFORMATION_MESSAGE
+                        )
+                    } else {
+                        destinationPath.createDirectories()
+                    }
+                }
                 thread(isDaemon = true, name = "InstallThread") {
                     val error = try {
                         selectedPack.versions[selectedMcVersion]
                             ?.get(selectedPackVersion)
-                            ?.install(JProgressBarProgressHandler(installProgress))
+                            ?.install(destinationPath, JProgressBarProgressHandler(installProgress))
                             ?: throw IllegalStateException(
                                 "Couldn't find pack version $selectedPackVersion for $selectedMcVersion"
                             )
@@ -131,6 +164,8 @@ fun main() {
             minecraftVersion.isEnabled = it
             includeUnsupportedMinecraft.isEnabled = it
             packVersion.isEnabled = it
+            installationDir.isEnabled = it
+            browseButton.isEnabled = it
             install.isEnabled = it
         }
 
@@ -150,6 +185,14 @@ fun main() {
             add(includeUnsupportedMinecraft.withLabel())
             add(Box.createVerticalStrut(15))
             add(packVersion.withLabel("Pack version: "))
+            add(Box.createVerticalStrut(15))
+            add(JPanel().apply {
+                layout = BoxLayout(this, BoxLayout.LINE_AXIS)
+                add(JLabel("Install to: "))
+                add(installationDir)
+                add(Box.createHorizontalStrut(5))
+                add(browseButton)
+            })
             add(Box.createVerticalStrut(15))
             add(JPanel().apply {
                 layout = BoxLayout(this, BoxLayout.PAGE_AXIS)

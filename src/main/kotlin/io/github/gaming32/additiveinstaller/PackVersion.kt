@@ -1,6 +1,7 @@
 package io.github.gaming32.additiveinstaller
 
 import com.google.gson.JsonObject
+import java.nio.file.Path
 
 class PackVersion(val modpack: Modpack, val data: JsonObject) {
     val packVersion: String
@@ -27,5 +28,7 @@ class PackVersion(val modpack: Modpack, val data: JsonObject) {
     val launcherVersionId = "${modpack.id}-$packVersion-$gameVersion"
     val launcherProfileId = "${modpack.id}-$gameVersion"
 
-    fun install(progressHandler: ProgressHandler) = PackInstaller(this, progressHandler).use(PackInstaller::install)
+    fun install(destination: Path, progressHandler: ProgressHandler) =
+        PackInstaller(this, destination, progressHandler)
+            .use(PackInstaller::install)
 }

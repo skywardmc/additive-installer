@@ -9,12 +9,13 @@ import io.github.oshai.KotlinLogging
 import java.net.URI
 import java.nio.file.FileSystem
 import java.nio.file.FileSystems
+import java.nio.file.Path
 import kotlin.io.path.*
 
 private val logger = KotlinLogging.logger {}
 
 class PackInstaller(
-    private val packVersion: PackVersion, private  val progressHandler: ProgressHandler
+    private val packVersion: PackVersion, private val destination: Path, private  val progressHandler: ProgressHandler
 ) : AutoCloseable {
     companion object {
         val DOT_MINECRAFT = Path(
@@ -60,6 +61,9 @@ class PackInstaller(
             ?: JsonObject()
         if ("created" !in profile) {
             profile["created"] = isoTime()
+        }
+        if (destination != DOT_MINECRAFT) {
+            profile["gameDir"] = destination.toString()
         }
         if ("icon" !in profile) {
             packVersion.modpack.launcherIcon?.let { profile["icon"] = it }
@@ -136,7 +140,7 @@ class PackInstaller(
             val (destRoot, dest) = if (path.startsWith("mods/")) {
                 Pair(modsDir, modsDir / path.substring(5))
             } else {
-                Pair(DOT_MINECRAFT, DOT_MINECRAFT / path)
+                Pair(destination, destination / path)
             }
             if (!dest.startsWith(destRoot)) {
                 throw IllegalArgumentException("Path doesn't start with mods dir?")
@@ -155,7 +159,7 @@ class PackInstaller(
         for (override in overrides) {
             val relative = override.relativeTo(overridesDir).toString()
             progressHandler.newTask("Extracting $relative")
-            val dest = DOT_MINECRAFT / relative
+            val dest = destination / relative
             dest.parent.createDirectories()
             override.copyTo(dest, true)
         }
