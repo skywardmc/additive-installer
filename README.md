@@ -5,7 +5,7 @@
   <br />
   <br />
   <p align="center">
-    Standalone installer for the [Additive](https://github.com/intergrav/Additive) and [Adrenaline](https://github.com/intergrav/Adrenaline) Minecraft modpacks
+    Standalone installer for the <a href="https://github.com/intergrav/Additive">Additive</a> and <a href="https://github.com/intergrav/Adrenaline">Adrenaline</a> Minecraft modpacks
     <br />
     <a href="https://github.com/Gaming32/additive-installer/issues">Report Bugs</a>
     ·
