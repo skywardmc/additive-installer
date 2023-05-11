@@ -51,6 +51,7 @@ fun main() {
         }
 
         fun setupMinecraftVersions() {
+            val mcVersion = minecraftVersion.selectedItem
             minecraftVersion.removeAllItems()
             val all = includeUnsupportedMinecraft.isSelected
             val supported = selectedPack.supportedMcVersions
@@ -59,6 +60,9 @@ fun main() {
                 .asSequence()
                 .filter { all || it in supported }
                 .forEach(minecraftVersion::addItem)
+            if (mcVersion != null) {
+                minecraftVersion.selectedItem = mcVersion
+            }
         }
         setupMinecraftVersions = ::setupMinecraftVersions
         setupMinecraftVersions()
@@ -71,10 +75,11 @@ fun main() {
                 iconImage = selectedPack.image
                 iconLabel.icon = ImageIcon(selectedPack.image)
 
-                val mcVersion = minecraftVersion.selectedItem
                 setupMinecraftVersions()
-                minecraftVersion.selectedItem = mcVersion
             }
+        }
+
+        val install = JButton("Install!").apply {
         }
 
         contentPane = JPanel().apply {
@@ -93,6 +98,12 @@ fun main() {
             add(includeUnsupportedMinecraft)
             add(Box.createVerticalStrut(10))
             add(packVersion.withLabel("Pack version: "))
+            add(Box.createVerticalStrut(10))
+            add(JPanel().apply {
+                layout = BorderLayout()
+                border = BorderFactory.createEmptyBorder(5, 5, 5, 5)
+                add(install, BorderLayout.PAGE_END)
+            })
         }
 
         isResizable = false
