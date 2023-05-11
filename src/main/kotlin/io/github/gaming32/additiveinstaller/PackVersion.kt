@@ -1,6 +1,7 @@
 package io.github.gaming32.additiveinstaller
 
 import com.google.gson.JsonObject
+import io.github.gaming32.additiveinstaller.installer.ProgressHandler
 
 class PackVersion(val data: JsonObject) {
     val packVersion: String
@@ -23,4 +24,7 @@ class PackVersion(val data: JsonObject) {
             versionNumber.substringAfterLast('.')
         }.uppercase().let(Loader::valueOf)
     }
+
+    fun install(progressHandler: ProgressHandler = ProgressHandler.Null) =
+        loader.installer.install(this, progressHandler)
 }

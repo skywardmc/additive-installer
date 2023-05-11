@@ -4,8 +4,12 @@ import com.formdev.flatlaf.FlatDarkLaf
 import com.formdev.flatlaf.FlatLightLaf
 import com.formdev.flatlaf.themes.FlatMacDarkLaf
 import com.formdev.flatlaf.themes.FlatMacLightLaf
+import io.github.oshai.KotlinLogging
 import java.awt.BorderLayout
 import javax.swing.*
+import kotlin.concurrent.thread
+
+private val logger = KotlinLogging.logger {}
 
 fun main() {
     if (isDarkMode()) {
@@ -26,7 +30,7 @@ fun main() {
     val adrenaline = Modpack("adrenaline")
     var selectedPack = additive
 
-    SwingUtilities.invokeLater { JFrame(selectedPack.windowTitle).apply {
+    SwingUtilities.invokeLater { JFrame(selectedPack.windowTitle).apply root@ {
         iconImage = selectedPack.image
 
         val iconLabel = JLabel(ImageIcon(selectedPack.image))
@@ -50,7 +54,7 @@ fun main() {
             addActionListener { setupMinecraftVersions() }
         }
 
-        fun setupMinecraftVersions() {
+        setupMinecraftVersions = {
             val mcVersion = minecraftVersion.selectedItem
             minecraftVersion.removeAllItems()
             val all = includeUnsupportedMinecraft.isSelected
@@ -64,7 +68,6 @@ fun main() {
                 minecraftVersion.selectedItem = mcVersion
             }
         }
-        setupMinecraftVersions = ::setupMinecraftVersions
         setupMinecraftVersions()
 
         val includeFeatures = JCheckBox("Include non-performance features").apply {
@@ -79,7 +82,56 @@ fun main() {
             }
         }
 
+        val installProgress = JProgressBar().apply {
+            isStringPainted = true
+        }
+
+        lateinit var enableOptions: (Boolean) -> Unit
+
         val install = JButton("Install!").apply {
+            addActionListener {
+                enableOptions(false)
+                val selectedMcVersion = minecraftVersion.selectedItem
+                val selectedPackVersion = packVersion.selectedItem
+                thread(isDaemon = true, name = "InstallThread") {
+                    val error = try {
+                        selectedPack.versions[selectedMcVersion]
+                            ?.get(selectedPackVersion)
+                            ?.install(JProgressBarProgressHandler(installProgress))
+                            ?: throw IllegalStateException(
+                                "Couldn't find pack version $selectedPackVersion for $selectedMcVersion"
+                            )
+                        null
+                    } catch (t: Throwable) {
+                        logger.error("Failed to install pack", t)
+                        t
+                    }
+                    SwingUtilities.invokeLater {
+                        enableOptions(true)
+                        if (error == null) {
+                            JOptionPane.showMessageDialog(
+                                this@root,
+                                "Installation success!",
+                                title, JOptionPane.INFORMATION_MESSAGE
+                            )
+                        } else {
+                            JOptionPane.showMessageDialog(
+                                this@root,
+                                "Installation failed.\n${error.localizedMessage}",
+                                title, JOptionPane.INFORMATION_MESSAGE
+                            )
+                        }
+                    }
+                }
+            }
+        }
+
+        enableOptions = {
+            includeFeatures.isEnabled = it
+            minecraftVersion.isEnabled = it
+            includeUnsupportedMinecraft.isEnabled = it
+            packVersion.isEnabled = it
+            install.isEnabled = it
         }
 
         contentPane = JPanel().apply {
@@ -90,19 +142,24 @@ fun main() {
                 border = BorderFactory.createEmptyBorder(5, 5, 5, 5)
                 add(iconLabel, BorderLayout.PAGE_START)
             })
-            add(Box.createVerticalStrut(10))
-            add(includeFeatures)
-            add(Box.createVerticalStrut(10))
+            add(Box.createVerticalStrut(15))
+            add(includeFeatures.withLabel())
+            add(Box.createVerticalStrut(15))
             add(minecraftVersion.withLabel("Minecraft version: "))
             add(Box.createVerticalStrut(5))
-            add(includeUnsupportedMinecraft)
-            add(Box.createVerticalStrut(10))
+            add(includeUnsupportedMinecraft.withLabel())
+            add(Box.createVerticalStrut(15))
             add(packVersion.withLabel("Pack version: "))
-            add(Box.createVerticalStrut(10))
+            add(Box.createVerticalStrut(15))
             add(JPanel().apply {
-                layout = BorderLayout()
+                layout = BoxLayout(this, BoxLayout.PAGE_AXIS)
                 border = BorderFactory.createEmptyBorder(5, 5, 5, 5)
-                add(install, BorderLayout.PAGE_END)
+                add(JPanel().apply {
+                    layout = BorderLayout()
+                    add(install)
+                })
+                add(Box.createVerticalStrut(10))
+                add(installProgress)
             })
         }
 
@@ -110,6 +167,7 @@ fun main() {
 
         pack()
         defaultCloseOperation = JFrame.DISPOSE_ON_CLOSE
+        setLocationRelativeTo(null)
         isVisible = true
     } }
 }

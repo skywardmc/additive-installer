@@ -25,15 +25,20 @@ val operatingSystem = System.getProperty("os.name").let { when {
     else -> OperatingSystem.NONE
 } }
 
-fun Component.withLabel(label: String) = JPanel().apply {
+fun Component.withLabel(label: String? = null) = JPanel().apply {
     layout = BoxLayout(this, BoxLayout.LINE_AXIS)
-    add(JLabel(label))
+    if (label != null) {
+        add(JLabel(label))
+    }
     add(this@withLabel)
 }
 
 fun requestJson(url: String) = try {
     logger.info("Requesting {}", url)
-    URL(url).openStream().reader().use(JsonParser::parseReader)!!
+    URL(url).openConnection().run {
+        setRequestProperty("User-Agent", "Additive Installer/$VERSION")
+        inputStream.reader().use(JsonParser::parseReader)!!
+    }
 } catch (e: Exception) {
     logger.error("Failed to request {}", url, e)
     JOptionPane.showMessageDialog(
