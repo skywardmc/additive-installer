@@ -4,7 +4,7 @@ import com.google.gson.JsonParser
 import io.github.oshai.KotlinLogging
 import java.awt.Component
 import java.net.URL
-import java.util.Locale
+import java.util.*
 import javax.swing.BoxLayout
 import javax.swing.JLabel
 import javax.swing.JOptionPane
@@ -43,27 +43,6 @@ fun requestJson(url: String) = try {
         JOptionPane.ERROR_MESSAGE
     )
     exitProcess(1)
-}
-
-inline fun <T, K1, K2> Sequence<T>.associateByMultiple(
-    keySelector1: (T) -> K1, keySelector2: (T) -> K2
-): Map<K1, Map<K2, T>> {
-    val result = mutableMapOf<K1, MutableMap<K2, T>>()
-    for (value in this) {
-        result.getOrPut(keySelector1(value), ::mutableMapOf)[keySelector2(value)] = value
-    }
-    return result
-}
-
-inline fun <T, K1, K2, K3> Sequence<T>.associateByMultiple(
-    keySelector1: (T) -> K1, keySelector2: (T) -> K2, keySelector3: (T) -> K3
-): Map<K1, Map<K2, Map<K3, T>>> {
-    val result = mutableMapOf<K1, MutableMap<K2, MutableMap<K3, T>>>()
-    for (value in this) {
-        result.getOrPut(keySelector1(value), ::mutableMapOf)
-            .getOrPut(keySelector2(value), ::mutableMapOf)[keySelector3(value)] = value
-    }
-    return result
 }
 
 fun String.capitalize() = replaceFirstChar { if (it.isLowerCase()) it.titlecase(Locale.ROOT) else it.toString() }

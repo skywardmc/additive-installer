@@ -4,9 +4,7 @@ import com.formdev.flatlaf.FlatDarkLaf
 import com.formdev.flatlaf.FlatLightLaf
 import com.formdev.flatlaf.themes.FlatMacDarkLaf
 import com.formdev.flatlaf.themes.FlatMacLightLaf
-import com.google.gson.JsonElement
 import java.awt.BorderLayout
-import javax.imageio.ImageIO
 import javax.swing.*
 
 fun main() {

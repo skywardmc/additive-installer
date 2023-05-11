@@ -1,7 +1,6 @@
 package io.github.gaming32.additiveinstaller
 
 import com.google.gson.JsonElement
-import java.util.Comparator
 import javax.imageio.ImageIO
 
 private const val PROJECT_BASE = "https://api.modrinth.com/v2/project"
