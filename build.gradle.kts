@@ -2,6 +2,7 @@ plugins {
     application
     kotlin("jvm") version "1.8.21"
     id("io.ktor.plugin") version "2.1.1" // It builds fat JARs
+    id("net.kyori.blossom") version "1.3.1"
 }
 
 group = "io.github.gaming32"
@@ -26,6 +27,10 @@ dependencies {
     implementation("com.formdev:flatlaf:3.1.1")
 
     implementation("com.google.code.gson:gson:2.10.1")
+}
+
+blossom {
+    replaceToken("<<VERSION>>", project.version, "src/main/kotlin/io/github/gaming32/additiveinstaller/versionHolder.kt")
 }
 
 kotlin {
