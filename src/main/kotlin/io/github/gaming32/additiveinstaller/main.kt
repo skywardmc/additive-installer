@@ -6,6 +6,7 @@ import com.formdev.flatlaf.themes.FlatMacDarkLaf
 import com.formdev.flatlaf.themes.FlatMacLightLaf
 import io.github.oshai.KotlinLogging
 import java.awt.BorderLayout
+import java.util.*
 import javax.swing.*
 import kotlin.concurrent.thread
 import kotlin.io.path.Path
@@ -15,7 +16,11 @@ import kotlin.io.path.isDirectory
 
 private val logger = KotlinLogging.logger {}
 
+val L10N = ResourceBundle.getBundle("l10n/lang", Locale.getDefault())!!
+
 fun main() {
+    logger.info("Additive Installer $VERSION")
+
     if (isDarkMode()) {
         if (operatingSystem == OperatingSystem.MACOS) {
             FlatMacDarkLaf.setup()
@@ -37,7 +42,7 @@ fun main() {
     val installDestChooser = JFileChooser(PackInstaller.DOT_MINECRAFT.toString()).apply {
         fileSelectionMode = JFileChooser.DIRECTORIES_ONLY
         isMultiSelectionEnabled = false
-        dialogTitle = "Select installation folder"
+        dialogTitle = L10N.getString("select.installation.folder")
         isAcceptAllFileFilterUsed = false
         resetChoosableFileFilters()
     }
@@ -61,7 +66,7 @@ fun main() {
             }
         }
 
-        val includeUnsupportedMinecraft = JCheckBox("Include unsupported Minecraft versions").apply {
+        val includeUnsupportedMinecraft = JCheckBox(L10N.getString("include.unsupported.minecraft")).apply {
             addActionListener { setupMinecraftVersions() }
         }
 
@@ -81,7 +86,7 @@ fun main() {
         }
         setupMinecraftVersions()
 
-        val includeFeatures = JCheckBox("Include non-performance features").apply {
+        val includeFeatures = JCheckBox(L10N.getString("include.non.performance.features")).apply {
             isSelected = true
             addActionListener {
                 selectedPack = if (isSelected) additive else adrenaline
@@ -98,7 +103,7 @@ fun main() {
         }
 
         val installationDir = JTextField(PackInstaller.DOT_MINECRAFT.toString())
-        val browseButton = JButton("Browse...").apply {
+        val browseButton = JButton(L10N.getString("browse")).apply {
             addActionListener {
                 if (installDestChooser.showOpenDialog(this@root) != JFileChooser.APPROVE_OPTION) {
                     return@addActionListener
@@ -109,7 +114,7 @@ fun main() {
 
         lateinit var enableOptions: (Boolean) -> Unit
 
-        val install = JButton("Install!").apply {
+        val install = JButton(L10N.getString("install")).apply {
             addActionListener {
                 enableOptions(false)
                 val selectedMcVersion = minecraftVersion.selectedItem
@@ -119,7 +124,7 @@ fun main() {
                     if (destinationPath.exists()) {
                         JOptionPane.showMessageDialog(
                             this@root,
-                            "Installation dir exists and is not a directory.",
+                            L10N.getString("installation.dir.not.directory"),
                             title, JOptionPane.INFORMATION_MESSAGE
                         )
                     } else {
@@ -144,13 +149,13 @@ fun main() {
                         if (error == null) {
                             JOptionPane.showMessageDialog(
                                 this@root,
-                                "Installation success!",
+                                L10N.getString("installation.success"),
                                 title, JOptionPane.INFORMATION_MESSAGE
                             )
                         } else {
                             JOptionPane.showMessageDialog(
                                 this@root,
-                                "Installation failed.\n${error.localizedMessage}",
+                                "${L10N.getString("installation.failed")}\n${error.localizedMessage}",
                                 title, JOptionPane.INFORMATION_MESSAGE
                             )
                         }
@@ -180,15 +185,15 @@ fun main() {
             add(Box.createVerticalStrut(15))
             add(includeFeatures.withLabel())
             add(Box.createVerticalStrut(15))
-            add(minecraftVersion.withLabel("Minecraft version: "))
+            add(minecraftVersion.withLabel(L10N.getString("minecraft.version")))
             add(Box.createVerticalStrut(5))
             add(includeUnsupportedMinecraft.withLabel())
             add(Box.createVerticalStrut(15))
-            add(packVersion.withLabel("Pack version: "))
+            add(packVersion.withLabel(L10N.getString("pack.version")))
             add(Box.createVerticalStrut(15))
             add(JPanel().apply {
                 layout = BoxLayout(this, BoxLayout.LINE_AXIS)
-                add(JLabel("Install to: "))
+                add(JLabel(L10N.getString("install.to")))
                 add(installationDir)
                 add(Box.createHorizontalStrut(5))
                 add(browseButton)

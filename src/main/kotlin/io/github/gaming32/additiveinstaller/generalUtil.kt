@@ -15,6 +15,7 @@ import java.nio.file.Path
 import java.nio.file.StandardCopyOption
 import java.security.DigestInputStream
 import java.security.MessageDigest
+import java.text.MessageFormat
 import java.time.ZoneOffset
 import java.time.ZonedDateTime
 import java.time.format.DateTimeFormatter
@@ -62,7 +63,7 @@ fun requestCriticalJson(url: String) = try {
     logger.error("Failed to request $url", e)
     JOptionPane.showMessageDialog(
         null,
-        "Failed to access Modrinth. Please check your internet connection.",
+        L10N.getString("modrinth.access.failed"),
         "Additive Installer",
         JOptionPane.ERROR_MESSAGE
     )
@@ -101,4 +102,12 @@ fun download(file: JsonObject, url: String, dest: Path) {
     if (!sha512.digest().contentEquals(file["hashes"].asJsonObject["sha512"].asString.hexToByteArray())) {
         throw IllegalStateException("Hash mismatch!")
     }
+}
+
+private val FORMAT = ThreadLocal.withInitial { MessageFormat("") }
+
+fun ResourceBundle.getString(key: String, vararg args: Any?) = FORMAT.get().let {
+    it.locale = locale
+    it.applyPattern(getString(key))
+    it.format(args)!!
 }

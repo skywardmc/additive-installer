@@ -37,6 +37,6 @@ class JProgressBarProgressHandler(private val bar: JProgressBar) : ProgressHandl
         prepared = false
         bar.value = 1
         bar.maximum = 1
-        bar.string = "Done!"
+        bar.string = L10N.getString("done")
     }
 }
