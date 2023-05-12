@@ -2,6 +2,7 @@ package io.github.gaming32.additiveinstaller
 
 import com.google.common.jimfs.Configuration
 import com.google.common.jimfs.Jimfs
+import com.google.gson.JsonArray
 import com.google.gson.JsonElement
 import com.google.gson.JsonObject
 import com.google.gson.JsonParser
@@ -120,6 +121,12 @@ class PackInstaller(
 
         progressHandler.newTask(L10N.getString("patching.client.json"))
         clientJson["id"] = packVersion.launcherVersionId
+        clientJson["arguments"]
+            .asJsonObject
+            .asMap()
+            .getOrPut("jvm", ::JsonArray)
+            .asJsonArray
+            .add("-D${packVersion.loader.addMods}=$modsDir/*")
         if (packVersion.packVersion.toVersion() >= "1.15.9".toVersion()) {
             // HACK HACK HACK World Host has a bug where Java 17 is required
             clientJson["javaVersion"] = JsonObject().apply {
@@ -144,9 +151,13 @@ class PackInstaller(
         files.asSequence().map(JsonElement::getAsJsonObject).forEach { file ->
             val path = file["path"].asString
             progressHandler.newTask(L10N.getString("downloading.file", path))
-            val dest = destination / path
-            if (!dest.startsWith(destination)) {
-                throw IllegalArgumentException("Path doesn't start with instance dir?")
+            val (destRoot, dest) = if (path.startsWith("mods/")) {
+                Pair(modsDir, modsDir / path.substring(5))
+            } else {
+                Pair(destination, destination / path)
+            }
+            if (!dest.startsWith(destRoot)) {
+                throw IllegalArgumentException("Path doesn't start with mods dir?")
             }
             dest.parent.createDirectories()
             download(file, file["downloads"].asJsonArray.first().asString, dest)
