@@ -6,6 +6,7 @@ import com.google.gson.JsonElement
 import com.google.gson.JsonObject
 import com.google.gson.JsonParser
 import io.github.oshai.KotlinLogging
+import io.github.z4kn4fein.semver.toVersion
 import java.net.URI
 import java.nio.file.FileSystem
 import java.nio.file.FileSystems
@@ -119,6 +120,13 @@ class PackInstaller(
 
         progressHandler.newTask(L10N.getString("patching.client.json"))
         clientJson["id"] = packVersion.launcherVersionId
+        if (packVersion.packVersion.toVersion() >= "1.15.9".toVersion()) {
+            // HACK HACK HACK World Host has a bug where Java 17 is required
+            clientJson["javaVersion"] = JsonObject().apply {
+                this["component"] = "java-runtime-gamma"
+                this["majorVersion"] = 17
+            }
+        }
 
         writeVersionDir(clientJson)
         updateLauncherProfiles()

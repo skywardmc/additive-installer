@@ -84,10 +84,16 @@ fun String.hexToByteArray(): ByteArray {
 fun isoTime(time: ZonedDateTime = ZonedDateTime.now(ZoneOffset.UTC)) = time.format(DateTimeFormatter.ISO_INSTANT)!!
 
 @Suppress("NOTHING_TO_INLINE")
-inline operator fun JsonObject.contains(memberName: String) = has(memberName)
+inline operator fun JsonObject.set(property: String, value: JsonElement?) = add(property, value)
 
 @Suppress("NOTHING_TO_INLINE")
-inline operator fun JsonObject.set(property: String, value: String) = addProperty(property, value)
+inline operator fun JsonObject.set(property: String, value: String?) = addProperty(property, value)
+
+@Suppress("NOTHING_TO_INLINE")
+inline operator fun JsonObject.set(property: String, value: Number?) = addProperty(property, value)
+
+@Suppress("NOTHING_TO_INLINE")
+inline operator fun JsonObject.contains(memberName: String) = has(memberName)
 
 fun ByteArray.toBase64() = Base64.getEncoder().encodeToString(this)!!
 

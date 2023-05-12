@@ -27,6 +27,8 @@ dependencies {
     implementation("com.formdev:flatlaf:3.1.1")
 
     implementation("com.google.code.gson:gson:2.10.1")
+
+    implementation("io.github.z4kn4fein:semver:1.4.2")
 }
 
 blossom {
