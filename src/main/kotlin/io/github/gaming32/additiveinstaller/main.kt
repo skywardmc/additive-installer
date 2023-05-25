@@ -63,6 +63,10 @@ fun main() {
                 selectedPack.versions[gameVersion]
                     ?.keys
                     ?.forEach(packVersion::addItem)
+                selectedPack.versions[gameVersion]
+                    ?.entries
+                    ?.first { it.value.data["featured"].asBoolean }
+                    ?.let { packVersion.selectedItem = it.key }
             }
         }
 

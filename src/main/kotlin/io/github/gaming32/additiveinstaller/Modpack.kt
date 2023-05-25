@@ -33,7 +33,7 @@ class Modpack(val id: String) {
         ?.prefix("data:image/png;base64,")
     val supportedMcVersions = buildSet {
         for ((key, value) in versions) {
-            if (value.values.first().data["featured"].asBoolean) {
+            if (value.values.any { it.data["featured"].asBoolean }) {
                 add(key)
             }
         }
