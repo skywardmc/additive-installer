@@ -40,23 +40,23 @@ class PackInstaller(
 
     @OptIn(ExperimentalPathApi::class)
     private  fun writeVersionDir(clientJson: JsonObject) {
-        progressHandler.newTask(L10N.getString("creating.version.folder"))
+        progressHandler.newTask(I18N.getString("creating.version.folder"))
         val versionDir = VERSIONS / packVersion.launcherVersionId
         versionDir.deleteRecursively()
         versionDir.createDirectories()
 
-        progressHandler.newTask(L10N.getString("writing.client.json"))
+        progressHandler.newTask(I18N.getString("writing.client.json"))
         versionDir.resolve("${packVersion.launcherVersionId}.json").writer().use(clientJson::writeTo)
 
-        progressHandler.newTask(L10N.getString("writing.placeholder.client.jar"))
+        progressHandler.newTask(I18N.getString("writing.placeholder.client.jar"))
         versionDir.resolve("${packVersion.launcherVersionId}.jar").createFile()
     }
 
     private  fun updateLauncherProfiles() {
-        progressHandler.newTask(L10N.getString("reading.launcher.profiles.json"))
+        progressHandler.newTask(I18N.getString("reading.launcher.profiles.json"))
         val launcherProfiles = LAUNCHER_PROFILES.reader().use(JsonParser::parseReader).asJsonObject
 
-        progressHandler.newTask(L10N.getString("patching.launcher.profiles.json"))
+        progressHandler.newTask(I18N.getString("patching.launcher.profiles.json"))
         val profile = launcherProfiles["profiles"]
             .asJsonObject[packVersion.launcherProfileId]
             ?.asJsonObject
@@ -72,7 +72,7 @@ class PackInstaller(
         }
         profile["lastUsed"] = isoTime()
         if ("name" !in profile) {
-            profile["name"] = L10N.getString("profile.name", packVersion.modpack.name, packVersion.gameVersion)
+            profile["name"] = I18N.getString("profile.name", packVersion.modpack.name, packVersion.gameVersion)
         }
         profile["lastVersionId"] = packVersion.launcherVersionId
         if ("type" !in profile) {
@@ -80,14 +80,14 @@ class PackInstaller(
         }
         launcherProfiles["profiles"].asJsonObject.add(packVersion.launcherProfileId, profile)
 
-        progressHandler.newTask(L10N.getString("writing.launcher.profiles.json"))
+        progressHandler.newTask(I18N.getString("writing.launcher.profiles.json"))
         LAUNCHER_PROFILES.writer().use(launcherProfiles::writeTo)
     }
 
     private fun downloadPack() {
         progressHandler.newTaskSet(3)
 
-        progressHandler.newTask(L10N.getString("downloading.pack"))
+        progressHandler.newTask(I18N.getString("downloading.pack"))
         val files = packVersion.data["files"].asJsonArray
         val file = files.asSequence()
             .map { it.asJsonObject }
@@ -96,10 +96,10 @@ class PackInstaller(
         val jfsPath = jimfs.getPath(file["filename"].asString)
         download(file, file["url"].asString, jfsPath)
 
-        progressHandler.newTask(L10N.getString("opening.pack"))
+        progressHandler.newTask(I18N.getString("opening.pack"))
         zfs = FileSystems.newFileSystem(URI("jar:${jfsPath.toUri()}!/"), mapOf<String, String>())
 
-        progressHandler.newTask(L10N.getString("reading.index"))
+        progressHandler.newTask(I18N.getString("reading.index"))
         packIndex = zfs.getPath("modrinth.index.json").reader().use(JsonParser::parseReader).asJsonObject
         if (packIndex["dependencies"].asJsonObject["minecraft"].asString != packVersion.gameVersion) {
             throw IllegalStateException("Game version mismatch!")
@@ -114,12 +114,12 @@ class PackInstaller(
         val loaderVersion = packIndex["dependencies"].asJsonObject[packVersion.loader.dependencyName].asString
         logger.info("Using ${packVersion.loader.dependencyName} $loaderVersion")
 
-        progressHandler.newTask(L10N.getString("downloading.client.json"))
+        progressHandler.newTask(I18N.getString("downloading.client.json"))
         val clientJson = requestJson(
             "${packVersion.loader.apiRoot}/versions/loader/$gameVersion/$loaderVersion/profile/json"
         ).asJsonObject
 
-        progressHandler.newTask(L10N.getString("patching.client.json"))
+        progressHandler.newTask(I18N.getString("patching.client.json"))
         clientJson["id"] = packVersion.launcherVersionId
         clientJson["arguments"]
             .asJsonObject
@@ -141,7 +141,7 @@ class PackInstaller(
 
     @OptIn(ExperimentalPathApi::class)
     private fun installPack() {
-        progressHandler.prepareNewTaskSet(L10N.getString("downloading.mods"))
+        progressHandler.prepareNewTaskSet(I18N.getString("downloading.mods"))
 
         val files = packIndex["files"].asJsonArray
         modsDir.deleteRecursively()
@@ -150,7 +150,7 @@ class PackInstaller(
 
         files.asSequence().map(JsonElement::getAsJsonObject).forEach { file ->
             val path = file["path"].asString
-            progressHandler.newTask(L10N.getString("downloading.file", path))
+            progressHandler.newTask(I18N.getString("downloading.file", path))
             val (destRoot, dest) = if (path.startsWith("mods/")) {
                 Pair(modsDir, modsDir / path.substring(5))
             } else {
@@ -163,7 +163,7 @@ class PackInstaller(
             download(file, file["downloads"].asJsonArray.first().asString, dest)
         }
 
-        progressHandler.prepareNewTaskSet(L10N.getString("extracting.overrides"))
+        progressHandler.prepareNewTaskSet(I18N.getString("extracting.overrides"))
 
         val overridesDir = zfs.getPath("overrides")
         val overrides = overridesDir.walk().toList()
@@ -172,7 +172,7 @@ class PackInstaller(
 
         for (override in overrides) {
             val relative = override.relativeTo(overridesDir).toString()
-            progressHandler.newTask(L10N.getString("extracting.override", relative))
+            progressHandler.newTask(I18N.getString("extracting.override", relative))
             val dest = destination / relative
             dest.parent.createDirectories()
             override.copyTo(dest, true)

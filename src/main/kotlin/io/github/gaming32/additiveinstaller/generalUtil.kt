@@ -63,7 +63,7 @@ fun requestCriticalJson(url: String) = try {
     logger.error("Failed to request $url", e)
     JOptionPane.showMessageDialog(
         null,
-        L10N.getString("modrinth.access.failed"),
+        I18N.getString("modrinth.access.failed"),
         "Additive Installer",
         JOptionPane.ERROR_MESSAGE
     )
