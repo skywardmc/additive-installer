@@ -123,12 +123,14 @@ class PackInstaller(
 
         progressHandler.newTask(I18N.getString("patching.client.json"))
         clientJson["id"] = packVersion.launcherVersionId
-        clientJson["arguments"]
-            .asJsonObject
-            .asMap()
-            .getOrPut("jvm", ::JsonArray)
-            .asJsonArray
-            .add("-D${packVersion.loader.addMods}=$modsDir/*")
+        packVersion.loader.addMods(loaderVersion.toVersion()).let { (prefix, suffix) ->
+            clientJson["arguments"]
+                .asJsonObject
+                .asMap()
+                .getOrPut("jvm", ::JsonArray)
+                .asJsonArray
+                .add("-D$prefix=$modsDir$suffix")
+        }
         if (packVersion.packVersion.toVersion() >= "1.15.9".toVersion()) {
             // HACK HACK HACK World Host has a bug where Java 17 is required
             clientJson["javaVersion"] = JsonObject().apply {
