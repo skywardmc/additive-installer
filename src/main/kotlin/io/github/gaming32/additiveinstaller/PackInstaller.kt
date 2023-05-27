@@ -9,6 +9,7 @@ import com.google.gson.JsonParser
 import io.github.oshai.KotlinLogging
 import io.github.z4kn4fein.semver.toVersion
 import java.net.URI
+import java.nio.file.FileAlreadyExistsException
 import java.nio.file.FileSystem
 import java.nio.file.FileSystems
 import java.nio.file.Path
@@ -20,6 +21,7 @@ class PackInstaller(
     private val packVersion: PackVersion, private val destination: Path, private  val progressHandler: ProgressHandler
 ) : AutoCloseable {
     companion object {
+        const val YOSBR_ID = "WwbubTsV"
         val DOT_MINECRAFT = Path(
             when (operatingSystem) {
                 OperatingSystem.WINDOWS -> "${System.getenv("APPDATA")}\\.minecraft"
@@ -160,7 +162,12 @@ class PackInstaller(
                 throw IllegalArgumentException("Path doesn't start with mods dir?")
             }
             dest.parent.createDirectories()
-            download(file, file["downloads"].asJsonArray.first().asString, dest)
+            val downloadUrl = file["downloads"].asJsonArray.first().asString
+            if ("/$YOSBR_ID/" in downloadUrl && "yosbr" in file["path"].asString) {
+                logger.info("Skipping yosbr")
+                return@forEach
+            }
+            download(file, downloadUrl, dest)
         }
 
         progressHandler.prepareNewTaskSet(I18N.getString("extracting.overrides"))
@@ -171,11 +178,21 @@ class PackInstaller(
         progressHandler.newTaskSet(overrides.size)
 
         for (override in overrides) {
-            val relative = override.relativeTo(overridesDir).toString()
+            var relative = override.relativeTo(overridesDir).toString()
+            var overwrite = true
+            if (relative.startsWith("config/yosbr/")) {
+                relative = relative.substring(13)
+                overwrite = false
+                logger.info("Override $relative is in yosbr")
+            }
             progressHandler.newTask(I18N.getString("extracting.override", relative))
             val dest = destination / relative
             dest.parent.createDirectories()
-            override.copyTo(dest, true)
+            try {
+                override.copyTo(dest, overwrite)
+            } catch (_: FileAlreadyExistsException) {
+                logger.info("Skipping override $relative because it was in yosbr and the file already exists")
+            }
         }
     }
 
