@@ -25,6 +25,7 @@ class PackVersion(val modpack: Modpack, val data: JsonObject) {
         }.uppercase().let(Loader::valueOf)
     }
 
+    val launcherFolderPath = "${modpack.id}/$packVersion-$gameVersion"
     val launcherVersionId = "${modpack.id}-$packVersion-$gameVersion"
     val launcherProfileId = "${modpack.id}-$gameVersion"
 

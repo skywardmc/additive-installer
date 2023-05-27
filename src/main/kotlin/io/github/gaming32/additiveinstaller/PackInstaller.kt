@@ -36,7 +36,7 @@ class PackInstaller(
 
     private lateinit var packIndex: JsonObject
 
-    private val modsDir = DOT_MINECRAFT / packVersion.launcherVersionId
+    private val modsDir = DOT_MINECRAFT / packVersion.launcherFolderPath
 
     @OptIn(ExperimentalPathApi::class)
     private  fun writeVersionDir(clientJson: JsonObject) {
