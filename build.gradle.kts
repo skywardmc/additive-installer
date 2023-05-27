@@ -67,6 +67,7 @@ val downloadBootstrap by tasks.registering(Download::class) {
 
 val nativeExe by tasks.registering(FileOutput::class) {
     dependsOn(downloadBootstrap)
+    dependsOn(tasks.shadowJar)
 
     output.set(file("$projectDir/build/libs/${project.archivesName.get()}-${project.version}.exe"))
     outputs.upToDateWhen { false }
