@@ -1,4 +1,5 @@
-<div style="text-align: center">
+<!--suppress HtmlDeprecatedAttribute -->
+<div align="center">
   <a href="https://github.com/Gaming32/additive-installer">
     <img src="https://raw.githubusercontent.com/intergrav/Branding/main/additive/additive_installer_textlogo_256h.png" alt="Logo" height="105">
   </a>
