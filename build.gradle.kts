@@ -1,8 +1,12 @@
+import de.undercouch.gradle.tasks.download.Download
+import org.jetbrains.kotlin.gradle.plugin.mpp.pm20.util.archivesName
+
 plugins {
     application
     kotlin("jvm") version "1.8.21"
     id("io.ktor.plugin") version "2.1.1" // It builds fat JARs
     id("net.kyori.blossom") version "1.3.1"
+    id("de.undercouch.download") version "5.4.0"
 }
 
 group = "io.github.gaming32"
@@ -46,3 +50,36 @@ tasks.jar {
         attributes["SplashScreen-Image"] = "splash.png"
     }
 }
+
+// Based on https://github.com/IrisShaders/Iris-Installer/blob/main/build.gradle
+abstract class FileOutput : DefaultTask() {
+    @get:OutputFile
+    abstract val output: Property<File>
+}
+
+val bootstrapVersion = "0.2.0"
+val bootstrapArch = "i686"
+
+val downloadBootstrap by tasks.registering(Download::class) {
+    src("https://maven.fabricmc.net/net/fabricmc/fabric-installer-native-bootstrap/windows-$bootstrapArch/$bootstrapVersion/windows-$bootstrapArch-$bootstrapVersion.exe")
+    dest(project.buildDir)
+}
+
+val nativeExe by tasks.registering(FileOutput::class) {
+    dependsOn(downloadBootstrap)
+
+    output.set(file("$projectDir/build/libs/${project.archivesName.get()}-${project.version}.exe"))
+    outputs.upToDateWhen { false }
+
+    doFirst {
+        output.get().delete()
+    }
+
+    doLast {
+        output.get().createNewFile()
+        output.get().writeBytes(downloadBootstrap.get().outputFiles.first().readBytes())
+        output.get().appendBytes(tasks.shadowJar.get().archiveFile.get().asFile.readBytes())
+    }
+}
+
+tasks.build.get().dependsOn(nativeExe)
