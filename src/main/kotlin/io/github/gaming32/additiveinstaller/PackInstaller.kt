@@ -8,6 +8,7 @@ import com.google.gson.JsonObject
 import com.google.gson.JsonParser
 import io.github.oshai.KotlinLogging
 import io.github.z4kn4fein.semver.toVersion
+import java.io.IOException
 import java.net.URI
 import java.nio.file.FileAlreadyExistsException
 import java.nio.file.FileSystem
@@ -174,7 +175,7 @@ class PackInstaller(
 
         progressHandler.prepareNewTaskSet(I18N.getString("extracting.overrides"))
 
-        val overridesDir = zfs.getPath("overrides")
+        val overridesDir = zfs.getPath("/overrides")
         val overrides = overridesDir.walk().toList()
 
         progressHandler.newTaskSet(overrides.size)
@@ -189,7 +190,10 @@ class PackInstaller(
             }
             progressHandler.newTask(I18N.getString("extracting.override", relative))
             val dest = destination / relative
-            dest.parent.createDirectories()
+            try {
+                dest.parent.createDirectories()
+            } catch (_: IOException) {
+            }
             try {
                 override.copyTo(dest, overwrite)
             } catch (_: FileAlreadyExistsException) {
