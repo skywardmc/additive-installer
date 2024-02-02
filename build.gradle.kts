@@ -9,11 +9,11 @@ plugins {
     id("de.undercouch.download") version "5.4.0"
 }
 
-group = "io.github.gaming32"
+group = "io.github.teamteds"
 version = "1.0.1"
 
 application {
-    mainClass.set("io.github.gaming32.additiveinstaller.MainKt")
+    mainClass.set("io.github.teamteds.tedsmodpacksinstaller.MainKt")
 }
 
 repositories {
@@ -36,7 +36,7 @@ dependencies {
 }
 
 blossom {
-    replaceToken("<<VERSION>>", project.version, "src/main/kotlin/io/github/gaming32/additiveinstaller/versionHolder.kt")
+    replaceToken("<<VERSION>>", project.version, "src/main/kotlin/io/github/teamteds/tedsmodpacksinstaller/versionHolder.kt")
 }
 
 kotlin {
