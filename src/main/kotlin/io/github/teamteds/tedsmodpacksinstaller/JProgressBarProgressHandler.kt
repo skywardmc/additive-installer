@@ -1,4 +1,4 @@
-package io.github.gaming32.additiveinstaller
+package io.github.teamteds.tedsmodpacksinstaller
 
 import io.github.oshai.KotlinLogging
 import javax.swing.JProgressBar

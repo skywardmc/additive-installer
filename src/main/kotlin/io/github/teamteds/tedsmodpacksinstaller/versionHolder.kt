@@ -1,3 +1,3 @@
-package io.github.gaming32.additiveinstaller
+package io.github.teamteds.tedsmodpacksinstaller
 
 const val VERSION = "<<VERSION>>"

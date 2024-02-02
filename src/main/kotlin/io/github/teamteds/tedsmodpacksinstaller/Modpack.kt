@@ -1,4 +1,4 @@
-package io.github.gaming32.additiveinstaller
+package io.github.teamteds.tedsmodpacksinstaller
 
 import com.google.gson.JsonElement
 import javax.imageio.ImageIO

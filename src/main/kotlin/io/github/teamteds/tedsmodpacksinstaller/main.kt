@@ -1,4 +1,4 @@
-package io.github.gaming32.additiveinstaller
+package io.github.teamteds.tedsmodpacksinstaller
 
 import com.formdev.flatlaf.FlatDarkLaf
 import com.formdev.flatlaf.FlatLightLaf
@@ -6,6 +6,7 @@ import com.formdev.flatlaf.themes.FlatMacDarkLaf
 import com.formdev.flatlaf.themes.FlatMacLightLaf
 import io.github.oshai.KotlinLogging
 import java.awt.BorderLayout
+import java.awt.event.ActionEvent
 import java.util.*
 import javax.swing.*
 import kotlin.concurrent.thread
@@ -19,7 +20,7 @@ private val logger = KotlinLogging.logger {}
 val I18N = ResourceBundle.getBundle("i18n/lang", Locale.getDefault())!!
 
 fun main() {
-    logger.info("Additive Installer $VERSION")
+    logger.info("TEDS Modpacks Installer $VERSION")
 
     if (isDarkMode()) {
         if (operatingSystem == OperatingSystem.MACOS) {
@@ -35,9 +36,10 @@ fun main() {
         }
     }
 
-    val additive = Modpack("additive")
-    val adrenaline = Modpack("adrenaline")
-    var selectedPack = additive
+    val tedsPlus = Modpack("teds-plus")
+    val tedsLite = Modpack("teds-lite")
+    // val hoplitePlus = Modpack("additive")
+    var selectedPack = tedsPlus
 
     val installDestChooser = JFileChooser(PackInstaller.DOT_MINECRAFT.toString()).apply {
         fileSelectionMode = JFileChooser.DIRECTORIES_ONLY
@@ -93,7 +95,7 @@ fun main() {
         val includeFeatures = JCheckBox(I18N.getString("include.non.performance.features")).apply {
             isSelected = true
             addActionListener {
-                selectedPack = if (isSelected) additive else adrenaline
+                selectedPack = if (isSelected) tedsPlus else tedsLite
                 title = selectedPack.windowTitle
                 iconImage = selectedPack.image
                 iconLabel.icon = ImageIcon(selectedPack.image)
@@ -101,6 +103,18 @@ fun main() {
                 setupMinecraftVersions()
             }
         }
+//        val modpacks = arrayOf("TEDS Plus", "TEDS Lite")
+//        val includeFeatures = JComboBox(modpacks).apply {
+//            addActionListener {
+//                selectedPack =
+//                    if (this.selectedItem == "TEDS Plus") tedsPlus else if (this.selectedItem == "TEDS Lite") tedsLite else tedsPlus// if (this.selectedItem == "Hoplite+") hoplitePlus else tedsPlus
+//                title = selectedPack.windowTitle
+//                iconImage = selectedPack.image
+//                iconLabel.icon = ImageIcon(selectedPack.image)
+//
+//                setupMinecraftVersions()
+//            }
+//        }
 
         val installProgress = JProgressBar().apply {
             isStringPainted = true

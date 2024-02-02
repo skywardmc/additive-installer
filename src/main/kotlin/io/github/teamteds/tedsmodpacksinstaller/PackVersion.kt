@@ -1,4 +1,4 @@
-package io.github.gaming32.additiveinstaller
+package io.github.teamteds.tedsmodpacksinstaller
 
 import com.google.gson.JsonObject
 import java.nio.file.Path
@@ -21,7 +21,7 @@ class PackVersion(val modpack: Modpack, val data: JsonObject) {
         } else {
             packVersion = versionNumber.substringBefore('+')
             gameVersion = versionNumber.substringAfter('+').substringBeforeLast('.')
-            versionNumber.substringAfterLast('.')
+            "fabric"
         }.uppercase().let(Loader::valueOf)
     }
 
