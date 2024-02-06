@@ -6,7 +6,7 @@
   <br />
   <br />
   <p>
-    Standalone installer for the <a href="https://modrinth.com/modpacks/teds-plus">TEDS Plus</a> and <a href="https://modrinth.com/modpacks/teds-lite">TEDS Lite</a> Minecraft modpacks
+    Standalone installer for the <a href="https://modrinth.com/modpack/teds-plus">TEDS Plus</a> and <a href="https://modrinth.com/modpack/teds-lite">TEDS Lite</a> Minecraft modpacks
     <br />
     <a href="https://github.com/TeamTEDS/teds-plus-installer/issues">Report Bugs</a>
     ·
