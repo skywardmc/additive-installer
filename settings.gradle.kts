@@ -1,3 +1,3 @@
 
-rootProject.name = "teds-modpacks-installer"
+rootProject.name = "teds-plus-installer"
 

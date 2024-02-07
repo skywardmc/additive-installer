@@ -21,7 +21,11 @@ class PackVersion(val modpack: Modpack, val data: JsonObject) {
         } else {
             packVersion = versionNumber.substringBefore('+')
             gameVersion = versionNumber.substringAfter('+').substringBeforeLast('.')
-            "fabric"
+            if (versionNumber.substringAfterLast('.') == "fabric") {
+                "fabric"
+            } else {
+                "quilt"
+            }
         }.uppercase().let(Loader::valueOf)
     }
 
