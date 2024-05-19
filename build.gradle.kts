@@ -57,7 +57,7 @@ abstract class FileOutput : DefaultTask() {
     abstract val output: Property<File>
 }
 
-val bootstrapVersion = "0.2.0"
+val bootstrapVersion = "0.5.2"
 val bootstrapArch = "i686"
 
 val downloadBootstrap by tasks.registering(Download::class) {
