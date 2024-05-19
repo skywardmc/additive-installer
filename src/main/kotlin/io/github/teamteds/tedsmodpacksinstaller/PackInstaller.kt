@@ -132,20 +132,6 @@ class PackInstaller(
                 .asJsonArray
                 .add("-D$prefix=$modsDir$suffix")
         }
-        if ((packVersion.packVersion.toVersion() >= "1.15.9".toVersion()) && (packVersion.packVersion.toVersion() <= "1.20.4".toVersion())) {
-            // HACK HACK HACK World Host has a bug where Java 17 is required
-            clientJson["javaVersion"] = JsonObject().apply {
-                this["component"] = "java-runtime-gamma"
-                this["majorVersion"] = 17
-            }
-        }
-        if (packVersion.packVersion.toVersion() >= "1.20.5".toVersion()) {
-            // 1.20.5 + Require Java 21
-            clientJson["javaVersion"] = JsonObject().apply {
-                this["component"] = "java-runtime-delta"
-                this["majorVersion"] = 21
-            }
-        }
 
         writeVersionDir(clientJson)
         updateLauncherProfiles()
