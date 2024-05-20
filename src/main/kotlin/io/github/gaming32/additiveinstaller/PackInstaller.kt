@@ -6,7 +6,7 @@ import com.google.gson.JsonArray
 import com.google.gson.JsonElement
 import com.google.gson.JsonObject
 import com.google.gson.JsonParser
-import io.github.oshai.KotlinLogging
+import io.github.oshai.kotlinlogging.KotlinLogging
 import io.github.z4kn4fein.semver.toVersion
 import java.io.IOException
 import java.net.URI
@@ -115,7 +115,7 @@ class PackInstaller(
         progressHandler.newTaskSet(8)
 
         val loaderVersion = packIndex["dependencies"].asJsonObject[packVersion.loader.dependencyName].asString
-        logger.info("Using ${packVersion.loader.dependencyName} $loaderVersion")
+        logger.info { "Using ${packVersion.loader.dependencyName} $loaderVersion" }
 
         progressHandler.newTask(I18N.getString("downloading.client.json"))
         val clientJson = requestJson(
@@ -160,7 +160,7 @@ class PackInstaller(
             dest.parent.createDirectories()
             val downloadUrl = file["downloads"].asJsonArray.first().asString
             if ("/$YOSBR_ID/" in downloadUrl && "yosbr" in file["path"].asString) {
-                logger.info("Skipping yosbr")
+                logger.info { "Skipping yosbr" }
                 return@forEach
             }
             download(file, downloadUrl, dest)
@@ -179,7 +179,7 @@ class PackInstaller(
             if (relative.startsWith("config/yosbr/")) {
                 relative = relative.substring(13)
                 overwrite = false
-                logger.info("Override $relative is in yosbr")
+                logger.info { "Override $relative is in yosbr" }
             }
             progressHandler.newTask(I18N.getString("extracting.override", relative))
             val dest = destination / relative
@@ -190,7 +190,7 @@ class PackInstaller(
             try {
                 override.copyTo(dest, overwrite)
             } catch (_: FileAlreadyExistsException) {
-                logger.info("Skipping override $relative because it was in yosbr and the file already exists")
+                logger.info { "Skipping override $relative because it was in yosbr and the file already exists" }
             }
         }
     }

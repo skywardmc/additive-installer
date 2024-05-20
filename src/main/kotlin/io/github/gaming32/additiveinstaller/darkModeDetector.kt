@@ -1,6 +1,6 @@
 package io.github.gaming32.additiveinstaller
 
-import io.github.oshai.KotlinLogging
+import io.github.oshai.kotlinlogging.KotlinLogging
 import java.io.BufferedReader
 import java.io.IOException
 
@@ -50,6 +50,6 @@ private fun query(cmd: String) = try {
         .bufferedReader()
         .use(BufferedReader::readText)
 } catch (e: IOException) {
-    logger.error("Exception caught while querying the OS", e)
+    logger.error(e) { "Exception caught while querying the OS" }
     ""
 }

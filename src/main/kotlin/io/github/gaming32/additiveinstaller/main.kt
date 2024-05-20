@@ -4,7 +4,7 @@ import com.formdev.flatlaf.FlatDarkLaf
 import com.formdev.flatlaf.FlatLightLaf
 import com.formdev.flatlaf.themes.FlatMacDarkLaf
 import com.formdev.flatlaf.themes.FlatMacLightLaf
-import io.github.oshai.KotlinLogging
+import io.github.oshai.kotlinlogging.KotlinLogging
 import java.awt.BorderLayout
 import java.util.*
 import javax.swing.*
@@ -16,10 +16,11 @@ import kotlin.io.path.isDirectory
 
 private val logger = KotlinLogging.logger {}
 
+const val VERSION = "<<VERSION>>"
 val I18N = ResourceBundle.getBundle("i18n/lang", Locale.getDefault())!!
 
 fun main() {
-    logger.info("Additive Installer $VERSION")
+    logger.info { "Additive Installer $VERSION" }
 
     if (isDarkMode()) {
         if (operatingSystem == OperatingSystem.MACOS) {
@@ -145,7 +146,7 @@ fun main() {
                             )
                         null
                     } catch (t: Throwable) {
-                        logger.error("Failed to install pack", t)
+                        logger.error(t) { "Failed to install pack" }
                         t
                     }
                     SwingUtilities.invokeLater {
