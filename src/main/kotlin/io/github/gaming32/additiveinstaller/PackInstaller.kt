@@ -42,7 +42,7 @@ class PackInstaller(
     private val modsDir = DOT_MINECRAFT / packVersion.launcherFolderPath
 
     @OptIn(ExperimentalPathApi::class)
-    private  fun writeVersionDir(clientJson: JsonObject) {
+    private fun writeVersionDir(clientJson: JsonObject) {
         progressHandler.newTask(I18N.getString("creating.version.folder"))
         val versionDir = VERSIONS / packVersion.launcherVersionId
         versionDir.deleteRecursively()
@@ -154,7 +154,7 @@ class PackInstaller(
             } else {
                 Pair(destination, destination / path)
             }
-            if (!dest.startsWith(destRoot)) {
+            if (!dest.normalize().startsWith(destRoot)) {
                 throw IllegalArgumentException("Path doesn't start with mods dir?")
             }
             dest.parent.createDirectories()

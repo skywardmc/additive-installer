@@ -1,5 +1,6 @@
 package io.github.gaming32.additiveinstaller
 
+import com.google.gson.FormattingStyle
 import com.google.gson.JsonElement
 import com.google.gson.JsonObject
 import com.google.gson.JsonParser
@@ -72,7 +73,9 @@ fun requestCriticalJson(url: String) = try {
 
 fun String.capitalize() = replaceFirstChar { if (it.isLowerCase()) it.titlecase(Locale.ROOT) else it.toString() }
 
-fun JsonElement.writeTo(writer: Writer) = Streams.write(this, JsonWriter(writer).apply { setIndent("  ") })
+fun JsonElement.writeTo(writer: Writer) = Streams.write(this, JsonWriter(writer).apply {
+    formattingStyle = FormattingStyle.PRETTY
+})
 
 fun String.hexToByteArray(): ByteArray {
     require((length and 1) == 0) { "$this has an odd number of chars" }
