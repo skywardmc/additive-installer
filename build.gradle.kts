@@ -2,8 +2,8 @@ import de.undercouch.gradle.tasks.download.Download
 
 plugins {
     application
-    kotlin("jvm") version "1.9.23"
-    id("net.raphimc.class-token-replacer") version "1.0.0"
+    kotlin("jvm") version "2.0.0"
+    id("net.raphimc.class-token-replacer") version "1.1.2"
     id("de.undercouch.download") version "5.6.0"
 }
 
@@ -22,7 +22,7 @@ dependencies {
     implementation("org.slf4j:slf4j-api:2.0.13")
     implementation("org.apache.logging.log4j:log4j-slf4j2-impl:2.23.1")
     implementation("org.apache.logging.log4j:log4j-core:2.23.1")
-    implementation("io.github.oshai:kotlin-logging-jvm:6.0.9")
+    implementation("io.github.oshai:kotlin-logging-jvm:7.0.0")
 
     implementation("com.google.jimfs:jimfs:1.3.0")
 
