@@ -53,11 +53,12 @@ fun main() {
 
         val iconLabel = JLabel(ImageIcon(selectedPack.image))
 
+        val minecraftVersion = JComboBox<String>()
+        val includeUnsupportedMinecraft = JCheckBox(I18N.getString("include.unsupported.minecraft"))
         val packVersion = JComboBox<String>()
+        val loaderSelector = JComboBox<String>()
 
-        lateinit var setupMinecraftVersions: () -> Unit
-
-        val minecraftVersion = JComboBox<String>().apply {
+        minecraftVersion.apply {
             addItemListener {
                 val gameVersion = selectedItem as? String ?: return@addItemListener
                 packVersion.removeAllItems()
@@ -66,16 +67,25 @@ fun main() {
                     ?.forEach(packVersion::addItem)
                 selectedPack.versions[gameVersion]
                     ?.entries
-                    ?.first { it.value.data["featured"].asBoolean }
+                    ?.first { it.value.values.any(PackVersion::isSupported) }
                     ?.let { packVersion.selectedItem = it.key }
             }
         }
 
-        val includeUnsupportedMinecraft = JCheckBox(I18N.getString("include.unsupported.minecraft")).apply {
-            addActionListener { setupMinecraftVersions() }
+        packVersion.addItemListener {
+            val gameVersion = minecraftVersion.selectedItem as? String ?: return@addItemListener
+            val selectedVersion = packVersion.selectedItem as? String ?: return@addItemListener
+            val loaders = selectedPack.versions[gameVersion]
+                ?.get(selectedVersion) ?: return@addItemListener
+            loaderSelector.removeAllItems()
+            for ((loader, version) in loaders) {
+                if (version.isSupported || includeUnsupportedMinecraft.isSelected) {
+                    loaderSelector.addItem(loader.name.lowercase().capitalize())
+                }
+            }
         }
 
-        setupMinecraftVersions = {
+        fun setupMinecraftVersions() {
             val mcVersion = minecraftVersion.selectedItem
             minecraftVersion.removeAllItems()
             val all = includeUnsupportedMinecraft.isSelected
@@ -90,6 +100,8 @@ fun main() {
             }
         }
         setupMinecraftVersions()
+
+        includeUnsupportedMinecraft.addActionListener { setupMinecraftVersions() }
 
         val includeFeatures = JCheckBox(I18N.getString("include.non.performance.features")).apply {
             isSelected = true
@@ -122,8 +134,9 @@ fun main() {
         val install = JButton(I18N.getString("install")).apply {
             addActionListener {
                 enableOptions(false)
-                val selectedMcVersion = minecraftVersion.selectedItem
-                val selectedPackVersion = packVersion.selectedItem
+                val selectedMcVersion = minecraftVersion.selectedItem as String
+                val selectedPackVersion = packVersion.selectedItem as String
+                val selectedLoader = Loader.valueOf((loaderSelector.selectedItem as String).uppercase())
                 val destinationPath = Path(installationDir.text)
                 if (!destinationPath.isDirectory()) {
                     if (destinationPath.exists()) {
@@ -132,6 +145,8 @@ fun main() {
                             I18N.getString("installation.dir.not.directory"),
                             title, JOptionPane.INFORMATION_MESSAGE
                         )
+                        enableOptions(true)
+                        return@addActionListener
                     } else {
                         destinationPath.createDirectories()
                     }
@@ -140,9 +155,10 @@ fun main() {
                     val error = try {
                         selectedPack.versions[selectedMcVersion]
                             ?.get(selectedPackVersion)
+                            ?.get(selectedLoader)
                             ?.install(destinationPath, JProgressBarProgressHandler(installProgress))
                             ?: throw IllegalStateException(
-                                "Couldn't find pack version $selectedPackVersion for $selectedMcVersion"
+                                "Couldn't find pack version $selectedPackVersion for $selectedMcVersion with loader $selectedLoader"
                             )
                         null
                     } catch (t: Throwable) {
@@ -174,6 +190,7 @@ fun main() {
             minecraftVersion.isEnabled = it
             includeUnsupportedMinecraft.isEnabled = it
             packVersion.isEnabled = it
+            loaderSelector.isEnabled = it
             installationDir.isEnabled = it
             browseButton.isEnabled = it
             install.isEnabled = it
@@ -195,6 +212,8 @@ fun main() {
             add(includeUnsupportedMinecraft.withLabel())
             add(Box.createVerticalStrut(15))
             add(packVersion.withLabel(I18N.getString("pack.version")))
+            add(Box.createVerticalStrut(5))
+            add(loaderSelector.withLabel(I18N.getString("mod.loader")))
             add(Box.createVerticalStrut(15))
             add(JPanel().apply {
                 layout = BoxLayout(this, BoxLayout.LINE_AXIS)
