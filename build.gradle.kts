@@ -8,7 +8,7 @@ plugins {
 }
 
 group = "io.github.gaming32"
-version = "1.0.2"
+version = "1.0.3"
 
 application {
     mainClass.set("io.github.gaming32.additiveinstaller.MainKt")
