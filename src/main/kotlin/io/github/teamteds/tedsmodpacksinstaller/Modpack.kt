@@ -1,28 +1,26 @@
 package io.github.teamteds.tedsmodpacksinstaller
 
 import com.google.gson.JsonElement
+import java.util.*
 import javax.imageio.ImageIO
 
 private const val PROJECT_BASE = "https://api.modrinth.com/v2/project"
 
 class Modpack(val id: String) {
-    val versions = requestCriticalJson("$PROJECT_BASE/$id/version").asJsonArray
-        .asSequence()
-        .map(JsonElement::getAsJsonObject)
-        .map { PackVersion(this, it) }
-        .run {
-            val result = mutableMapOf<String, MutableMap<String, PackVersion>>()
-            for (version in this) {
-                val game = result.getOrPut(version.gameVersion, ::mutableMapOf)
-                game[version.packVersion] = maxOf(
-                    game[version.packVersion],
-                    version,
-                    Comparator.comparingInt { it?.loader?.ordinal ?: -1 }
-                )!!
+    val versions: Map<String, Map<String, Map<Loader, PackVersion>>> =
+        requestCriticalJson("$PROJECT_BASE/$id/version").asJsonArray
+            .asSequence()
+            .map(JsonElement::getAsJsonObject)
+            .map { PackVersion(this, it) }
+            .run {
+                val result = mutableMapOf<String, MutableMap<String, MutableMap<Loader, PackVersion>>>()
+                for (version in this) {
+                    val byPackVersion = result.getOrPut(version.gameVersion, ::mutableMapOf)
+                    val byLoader = byPackVersion.getOrPut(version.packVersion) { EnumMap(Loader::class.java) }
+                    byLoader[version.loader] = version
+                }
+                result
             }
-            @Suppress("USELESS_CAST") // It's a cast to an immutable interface, Kotlin. That's not unnecessary (imo).
-            result as Map<String, Map<String, PackVersion>>
-        }
 
     val name = id.capitalize()
     val windowTitle = I18N.getString("window.title", name)
@@ -33,7 +31,7 @@ class Modpack(val id: String) {
         ?.prefix("data:image/png;base64,")
     val supportedMcVersions = buildSet {
         for ((key, value) in versions) {
-            if (value.values.any { it.data["featured"].asBoolean }) {
+            if (value.values.asSequence().flatMap { it.values }.any(PackVersion::isSupported)) {
                 add(key)
             }
         }

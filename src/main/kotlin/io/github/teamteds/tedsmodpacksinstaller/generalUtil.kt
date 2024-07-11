@@ -1,11 +1,12 @@
 package io.github.teamteds.tedsmodpacksinstaller
 
+import com.google.gson.FormattingStyle
 import com.google.gson.JsonElement
 import com.google.gson.JsonObject
 import com.google.gson.JsonParser
 import com.google.gson.internal.Streams
 import com.google.gson.stream.JsonWriter
-import io.github.oshai.KotlinLogging
+import io.github.oshai.kotlinlogging.KotlinLogging
 import java.awt.Component
 import java.io.InputStream
 import java.io.Writer
@@ -49,7 +50,7 @@ fun Component.withLabel(label: String? = null) = JPanel().apply {
 }
 
 fun request(url: String): InputStream {
-    logger.info("Requesting $url")
+    logger.info { "Requesting $url" }
     val cnxn = URL(url).openConnection()
     cnxn.setRequestProperty("User-Agent", "Additive Installer/$VERSION")
     return cnxn.getInputStream()
@@ -60,7 +61,7 @@ fun requestJson(url: String) = request(url).reader().use(JsonParser::parseReader
 fun requestCriticalJson(url: String) = try {
     requestJson(url)
 } catch (e: Exception) {
-    logger.error("Failed to request $url", e)
+    logger.error(e) { "Failed to request $url" }
     JOptionPane.showMessageDialog(
         null,
         I18N.getString("modrinth.access.failed"),
@@ -72,7 +73,9 @@ fun requestCriticalJson(url: String) = try {
 
 fun String.capitalize() = replaceFirstChar { if (it.isLowerCase()) it.titlecase(Locale.ROOT) else it.toString() }
 
-fun JsonElement.writeTo(writer: Writer) = Streams.write(this, JsonWriter(writer).apply { setIndent("  ") })
+fun JsonElement.writeTo(writer: Writer) = Streams.write(this, JsonWriter(writer).apply {
+    formattingStyle = FormattingStyle.PRETTY
+})
 
 fun String.hexToByteArray(): ByteArray {
     require((length and 1) == 0) { "$this has an odd number of chars" }

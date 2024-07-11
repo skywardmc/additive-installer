@@ -1,16 +1,14 @@
 import de.undercouch.gradle.tasks.download.Download
-import org.jetbrains.kotlin.gradle.plugin.mpp.pm20.util.archivesName
 
 plugins {
     application
-    kotlin("jvm") version "1.8.21"
-    id("io.ktor.plugin") version "2.1.1" // It builds fat JARs
-    id("net.kyori.blossom") version "1.3.1"
-    id("de.undercouch.download") version "5.4.0"
+    kotlin("jvm") version "2.0.0"
+    id("net.raphimc.class-token-replacer") version "1.1.2"
+    id("de.undercouch.download") version "5.6.0"
 }
 
 group = "io.github.teamteds"
-version = "1.1.0"
+version = "1.1.1"
 
 application {
     mainClass.set("io.github.teamteds.tedsmodpacksinstaller.MainKt")
@@ -21,22 +19,24 @@ repositories {
 }
 
 dependencies {
-    implementation("org.slf4j:slf4j-api:2.0.7")
-    implementation("org.apache.logging.log4j:log4j-slf4j2-impl:2.20.0")
-    implementation("org.apache.logging.log4j:log4j-core:2.20.0")
-    implementation("io.github.oshai:kotlin-logging-jvm:4.0.0-beta-22")
+    implementation("org.slf4j:slf4j-api:2.0.13")
+    implementation("org.apache.logging.log4j:log4j-slf4j2-impl:2.23.1")
+    implementation("org.apache.logging.log4j:log4j-core:2.23.1")
+    implementation("io.github.oshai:kotlin-logging-jvm:7.0.0")
 
-    implementation("com.google.jimfs:jimfs:1.2")
+    implementation("com.google.jimfs:jimfs:1.3.0")
 
-    implementation("com.formdev:flatlaf:3.1.1")
+    implementation("com.formdev:flatlaf:3.4.1")
 
-    implementation("com.google.code.gson:gson:2.10.1")
+    implementation("com.google.code.gson:gson:2.11.0")
 
-    implementation("io.github.z4kn4fein:semver:1.4.2")
+    implementation("io.github.z4kn4fein:semver-jvm:2.0.0")
 }
 
-blossom {
-    replaceToken("<<VERSION>>", project.version, "src/main/kotlin/io/github/teamteds/tedsmodpacksinstaller/versionHolder.kt")
+sourceSets.main {
+    classTokenReplacer {
+        property("<<VERSION>>", version)
+    }
 }
 
 kotlin {
@@ -49,12 +49,8 @@ tasks.jar {
         attributes["Multi-Release"] = true
         attributes["SplashScreen-Image"] = "splash.png"
     }
-}
-
-// Based on https://github.com/IrisShaders/Iris-Installer/blob/main/build.gradle
-abstract class FileOutput : DefaultTask() {
-    @get:OutputFile
-    abstract val output: Property<File>
+    from(configurations.runtimeClasspath.get().files.map { if (it.isDirectory) it else zipTree(it) })
+    duplicatesStrategy = DuplicatesStrategy.WARN
 }
 
 val bootstrapVersion = "0.5.2"
@@ -62,25 +58,38 @@ val bootstrapArch = "i686"
 
 val downloadBootstrap by tasks.registering(Download::class) {
     src("https://maven.fabricmc.net/net/fabricmc/fabric-installer-native-bootstrap/windows-$bootstrapArch/$bootstrapVersion/windows-$bootstrapArch-$bootstrapVersion.exe")
-    dest(project.buildDir)
+    dest(project.layout.buildDirectory.get().dir("native-bootstrap"))
 }
 
-val nativeExe by tasks.registering(FileOutput::class) {
-    dependsOn(downloadBootstrap)
-    dependsOn(tasks.shadowJar)
+abstract class NativeExeTask : DefaultTask() {
+    @get:InputFile
+    abstract val bootstrapFile: RegularFileProperty
 
-    output.set(file("$projectDir/build/libs/${project.archivesName.get()}-${project.version}.exe"))
-    outputs.upToDateWhen { false }
+    @get:InputFile
+    abstract val jarFile: RegularFileProperty
+
+    @get:OutputFile
+    abstract val output: RegularFileProperty
+}
+
+val nativeExe by tasks.registering(NativeExeTask::class) {
+    dependsOn(downloadBootstrap)
+    dependsOn(tasks.jar)
+
+    bootstrapFile = downloadBootstrap.get().outputFiles.first()
+    jarFile = tasks.jar.get().archiveFile
+    output = file("$projectDir/build/libs/${base.archivesName.get()}-${project.version}.exe")
 
     doFirst {
-        output.get().delete()
+        output.get().asFile.delete()
     }
 
     doLast {
-        output.get().createNewFile()
-        output.get().writeBytes(downloadBootstrap.get().outputFiles.first().readBytes())
-        output.get().appendBytes(tasks.shadowJar.get().archiveFile.get().asFile.readBytes())
+        val outputFile = output.get().asFile
+        outputFile.createNewFile()
+        outputFile.writeBytes(downloadBootstrap.get().outputFiles.first().readBytes())
+        outputFile.appendBytes(tasks.jar.get().archiveFile.get().asFile.readBytes())
     }
 }
 
-tasks.build.get().dependsOn(nativeExe)
+tasks.assemble.get().dependsOn(nativeExe)

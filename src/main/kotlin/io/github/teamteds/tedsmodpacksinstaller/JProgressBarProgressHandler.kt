@@ -1,6 +1,6 @@
 package io.github.teamteds.tedsmodpacksinstaller
 
-import io.github.oshai.KotlinLogging
+import io.github.oshai.kotlinlogging.KotlinLogging
 import javax.swing.JProgressBar
 import javax.swing.SwingUtilities
 
@@ -25,7 +25,7 @@ class JProgressBarProgressHandler(private val bar: JProgressBar) : ProgressHandl
     }
 
     override fun newTask(title: String) {
-        logger.info("New task: $title")
+        logger.info { "New task: $title" }
         SwingUtilities.invokeLater {
             prepared = false
             bar.value++
