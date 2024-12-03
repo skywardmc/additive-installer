@@ -1,7 +1,12 @@
 package io.github.gaming32.additiveinstaller
 
+import io.github.oshai.kotlinlogging.KotlinLogging
 import java.io.BufferedReader
 import java.io.IOException
+
+// Ported to Kotlin from https://github.com/IrisShaders/Iris-Installer/blob/main/src/main/java/net/hypercubemc/iris_installer/DarkModeDetector.java
+
+private val logger = KotlinLogging.logger {}
 
 private const val REGQUERY_UTIL = "reg query "
 private const val REGDWORD_TOKEN = "REG_DWORD"
@@ -77,6 +82,7 @@ private fun query(cmd: String): String {
             .bufferedReader()
             .use(BufferedReader::readText)
     } catch (e: IOException) {
+        logger.error { "Exception caught while querying the OS" }
         ""
     }
 }
