@@ -97,6 +97,7 @@ fun main() {
         }
         setupMinecraftVersions()
 
+        includeUnsupportedMinecraft.toolTipText = I18N.getString("include.unsupported.minecraft.tooltip")
         includeUnsupportedMinecraft.addActionListener { setupMinecraftVersions() }
 
         val includeFeatures = JCheckBox(I18N.getString("include.non.performance.features")).apply {
