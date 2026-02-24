@@ -142,11 +142,21 @@ class PackInstaller(
         progressHandler.prepareNewTaskSet(I18N.getString("downloading.mods"))
 
         val files = packIndex["files"].asJsonArray
+            .asSequence()
+            .map(JsonElement::getAsJsonObject)
+            .filterNot { file ->
+                val isClientUnsupported = file["env"]?.asJsonObject?.get("client")?.asString == "unsupported"
+                if (isClientUnsupported) {
+                    logger.info { "Skipping ${file["path"].asString} because client is unsupported" }
+                }
+                isClientUnsupported
+            }
+            .toList()
         modsDir.deleteRecursively()
 
-        progressHandler.newTaskSet(files.size())
+        progressHandler.newTaskSet(files.size)
 
-        files.asSequence().map(JsonElement::getAsJsonObject).forEach { file ->
+        files.forEach { file ->
             val path = file["path"].asString
             progressHandler.newTask(I18N.getString("downloading.file", path))
             val (destRoot, dest) = if (path.startsWith("mods/")) {
