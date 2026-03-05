@@ -22,7 +22,6 @@ class PackInstaller(
     private val packVersion: PackVersion, private val destination: Path, private val progressHandler: ProgressHandler
 ) : AutoCloseable {
     companion object {
-        const val YOSBR_ID = "WwbubTsV"
         val DOT_MINECRAFT = Path(
             when (operatingSystem) {
                 OperatingSystem.WINDOWS -> "${System.getenv("APPDATA")}\\.minecraft"
@@ -168,12 +167,7 @@ class PackInstaller(
                 throw IllegalArgumentException("Path doesn't start with mods dir?")
             }
             dest.parent.createDirectories()
-            val downloadUrl = file["downloads"].asJsonArray.first().asString
-            if ("/$YOSBR_ID/" in downloadUrl && "yosbr" in file["path"].asString) {
-                logger.info { "Skipping yosbr" }
-                return@forEach
-            }
-            download(file, downloadUrl, dest)
+            download(file, file["downloads"].asJsonArray.first().asString, dest)
         }
 
         progressHandler.prepareNewTaskSet(I18N.getString("extracting.overrides"))
@@ -184,24 +178,11 @@ class PackInstaller(
         progressHandler.newTaskSet(overrides.size)
 
         for (override in overrides) {
-            var relative = override.relativeTo(overridesDir).toString()
-            var overwrite = true
-            if (relative.startsWith("config/yosbr/")) {
-                relative = relative.substring(13)
-                overwrite = false
-                logger.info { "Override $relative is in yosbr" }
-            }
+            val relative = override.relativeTo(overridesDir).toString()
             progressHandler.newTask(I18N.getString("extracting.override", relative))
             val dest = destination / relative
-            try {
-                dest.parent.createDirectories()
-            } catch (_: IOException) {
-            }
-            try {
-                override.copyTo(dest, overwrite)
-            } catch (_: FileAlreadyExistsException) {
-                logger.info { "Skipping override $relative because it was in yosbr and the file already exists" }
-            }
+            dest.parent.createDirectories()
+            override.copyTo(dest, true)
         }
     }
 
