@@ -8,9 +8,7 @@ import com.google.gson.JsonObject
 import com.google.gson.JsonParser
 import io.github.oshai.kotlinlogging.KotlinLogging
 import io.github.z4kn4fein.semver.toVersion
-import java.io.IOException
 import java.net.URI
-import java.nio.file.FileAlreadyExistsException
 import java.nio.file.FileSystem
 import java.nio.file.FileSystems
 import java.nio.file.Path
