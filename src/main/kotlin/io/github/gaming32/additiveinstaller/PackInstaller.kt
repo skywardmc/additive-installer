@@ -152,6 +152,9 @@ class PackInstaller(
             }
             .toList()
         modsDir.deleteRecursively()
+        (destination / "config/yosbr").deleteRecursively()
+        (destination / "config/modpack_defaults").deleteRecursively()
+        (destination / "config/crash_assistant").deleteRecursively()
 
         progressHandler.newTaskSet(files.size)
 
