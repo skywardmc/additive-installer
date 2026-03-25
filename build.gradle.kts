@@ -2,9 +2,9 @@ import de.undercouch.gradle.tasks.download.Download
 
 plugins {
     application
-    kotlin("jvm") version "2.0.0"
-    id("net.raphimc.class-token-replacer") version "1.1.2"
-    id("de.undercouch.download") version "5.6.0"
+    kotlin("jvm") version "2.3.20"
+    id("net.raphimc.class-token-replacer") version "1.1.7"
+    id("de.undercouch.download") version "5.7.0"
 }
 
 group = "io.github.gaming32"
@@ -19,18 +19,14 @@ repositories {
 }
 
 dependencies {
-    implementation("org.slf4j:slf4j-api:2.0.13")
-    implementation("org.apache.logging.log4j:log4j-slf4j2-impl:2.23.1")
-    implementation("org.apache.logging.log4j:log4j-core:2.23.1")
-    implementation("io.github.oshai:kotlin-logging-jvm:7.0.0")
-
-    implementation("com.google.jimfs:jimfs:1.3.0")
-
-    implementation("com.formdev:flatlaf:3.4.1")
-
-    implementation("com.google.code.gson:gson:2.11.0")
-
-    implementation("io.github.z4kn4fein:semver-jvm:2.0.0")
+    implementation("org.slf4j:slf4j-api:2.0.17")
+    implementation("org.apache.logging.log4j:log4j-slf4j2-impl:2.25.3")
+    implementation("org.apache.logging.log4j:log4j-core:2.25.3")
+    implementation("io.github.oshai:kotlin-logging-jvm:8.0.01")
+    implementation("com.google.jimfs:jimfs:1.3.1")
+    implementation("com.formdev:flatlaf:3.7.1")
+    implementation("com.google.code.gson:gson:2.13.2")
+    implementation("io.github.z4kn4fein:semver-jvm:3.0.0")
 }
 
 sourceSets.main {
